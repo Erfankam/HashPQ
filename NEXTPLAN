@@ -1,0 +1,14 @@
+Thu Apr 12 16:30:38 IRDT 2012
+# TODO or FIXME
+#       work on exceptions during get or put
+#       about return values list or tuples or simple variables
+#       use oredered dict instead of dic for all dic
+#       work on exception
+#       how to return items just values or both
+#       use keywordarguments instead of positional ones
+#       override functions by some options
+#       queues have tails and head to easily iterate on it all
+#       add thread safety to lib
+#		add priority queue inside code instead import it 
+
+

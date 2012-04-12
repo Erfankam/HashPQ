@@ -1,0 +1,7 @@
+At: pr 12 16:30:38 IRDT 2012
+By: Erfankam
+Do:
+	1. add keyword argument passing to put_nowait func
+	2. fix a bug when we have just a value
+	3. add changelog and todo files in project
+	4. add future plan to project

@@ -3,17 +3,14 @@ from threading import Event
 import time
 import Queue
 
+
 try:
     from collections import OrderedDict
 except:
     # If could not, import it from local directory
     from OrderedDict import OrderedDict
 
-# TODO of FIXME
-#       work on exceptions during get or put
-#       about return values list or tuples or simple variables
-#       use oredered dict instead of dic for all dic
-#       
+      
 
 DEFAULT_PRIORITY = 0
 DEFAULT_QUEUE = 0
@@ -94,6 +91,9 @@ class HashPQueue(object):
         return value
 
     def pick(self):
+        pass
+
+    def pick_nowait(self):
         pass
 
     def get_as_list(self):
@@ -181,14 +181,17 @@ class HashPQueue(object):
             key = item[1]
             value = item[2]
         except IndexError:
-            priority = DEFAULT_PRIORITY
-            key = item[0]
-            value = item[1]
-        except IndexError:
-            priority = DEFAULT_PRIORITY
-            key = DEFAULT_QUEUE
-            value = item[0]
+            try:
+                priority = DEFAULT_PRIORITY
+                key = item[0]
+                value = item[1]
+            except IndexError:
+                priority = DEFAULT_PRIORITY
+                key = DEFAULT_QUEUE
+                value = item[0]
         except ValueError:
+            return False
+        except:
             return False
         if priority not in self.__dic.keys():
             self.__dic[priority] = OrderedDict()
@@ -215,6 +218,37 @@ class HashPQueue(object):
             del self.__dic[highestPriority]
         return item[1]
 
+    def put_nowait_with_kwa(self, **kwargs):
+       if not kwargs:
+           return False
+       if self.__size == self.__capacity:
+           return False
+       if self.__size == self.__capacity:
+           self.__lock.clear()
+           self.__lock.wait()
+       if 'priority' in kwargs:
+           priority = kwargs['priority']
+       else:
+           priority = DEFAULT_PRIORITY
+
+       if 'key' in kwargs:
+           key = kwargs['key']
+       else:
+           key = DEFAULT_QUEUE
+
+       if 'value' in kwargs:
+           value = kwargs['value']
+       else:
+           raise Exception
+           return False
+
+       if priority not in self.__dic.keys():
+            self.__dic[priority] = OrderedDict()
+       if key not in self.__dic[priority]:
+            self.__size += 1
+       self.__dic[priority][key] = value
+       self.__lock.set()
+
     def put_nowait(self, item):
         if not item:
             return False
@@ -228,14 +262,15 @@ class HashPQueue(object):
             key = item[1]
             value = item[2]
         except IndexError:
-            priority = DEFAULT_PRIORITY
-            key = item[0]
-            value = item[1]
-        except IndexError:
-            priority = DEFAULT_PRIORITY
-            key = DEFAULT_QUEUE
-            value = item[0]
-        except ValueError:
+            try:
+                priority = DEFAULT_PRIORITY
+                key = item[0]
+                value = item[1]
+            except IndexError:
+                priority = DEFAULT_PRIORITY
+                key = DEFAULT_QUEUE
+                value = item[0]
+        except:
             return False
         if priority not in self.__dic.keys():
             self.__dic[priority] = OrderedDict()
@@ -260,6 +295,8 @@ if __name__ == '__main__':
     pq.put_nowait((5, 4, 6))
     pq.put_nowait((8, 4, 7))
     pq.put_nowait((3, 6))
+    pq.put_nowait((2,))
+    pq.put_nowait_with_kwa(priority=3, value=3)
     pq.get_dic()
     print "get_as_list:", pq.get_as_list()
     print pq.qsize()
