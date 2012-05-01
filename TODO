@@ -1,0 +1,17 @@
+
+# TODO of FIXME
+#       work on exceptions during get or put
+#       about return values list or tuples or simple variables
+#       use oredered dict instead of dic for all dic
+#       work on exception
+#       how to return items just values or both
+#       use keywordarguments instead of positional ones
+#       override functions by some options
+#       queues have tails and head to easily iterate on it all
+#       add thread safety to lib
+#       define proper Exceptions in right condition ***
+#       consider argument to modify return value of get_as_list
+#       # to return some or all of elements
+#       delete extra codes existed cause of redefinition of blocking and 
+#       Nonblocking functins
+#
