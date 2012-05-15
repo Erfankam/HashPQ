@@ -3,13 +3,11 @@ from threading import Event
 import time
 import Queue
 
-
 try:
     from collections import OrderedDict
 except:
     # If could not, import it from local directory
     from OrderedDict import OrderedDict
-       
 
 DEFAULT_PRIORITY = 0
 DEFAULT_QUEUE = 0
@@ -96,10 +94,13 @@ class HashPQueue(object):
     def pick_nowait(self):
         pass
 
-    def pick_as_list(self):
+    def get_as_list(self):
         pass
 
-    def get_as_list(self):
+    def get_as_list_nowait(self):
+        pass
+
+    def pick_as_list(self):
         # retrun none if hashpq is empty
         # FIXME
         if not self.__dic:
@@ -114,7 +115,7 @@ class HashPQueue(object):
                 item_list.append(item)
         return item_list
 
-    def get_as_list_nowait(self):
+    def pick_as_list_nowait(self):
         # retrun none if hashpq is empty
         # FIXME
         if not self.__dic:
