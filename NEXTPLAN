@@ -10,5 +10,6 @@ Thu Apr 12 16:30:38 IRDT 2012
 #       queues have tails and head to easily iterate on it all
 #       add thread safety to lib
 #		add priority queue inside code instead import it 
-
+#		can include any container such as set, stack or even lists. 
+#       use signalling for dic if receive full or empty event.
 

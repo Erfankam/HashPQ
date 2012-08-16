@@ -1,4 +1,5 @@
 #!/usr/bin/python
+
 from threading import Event
 import time
 import Queue
@@ -10,9 +11,9 @@ except:
     from OrderedDict import OrderedDict
 
 DEFAULT_PRIORITY = 0
-DEFAULT_QUEUE = 0
+DEFAULT_KEY = 0
 
-class HashPQueue(object):
+class HashPQ(object):
     __slots__ = [ '__capacity',\
                       '__size',\
                       '__dic',\
@@ -20,7 +21,7 @@ class HashPQueue(object):
                 ]
 
     def __new__(cls, *args, **kwargs):
-        return super(HashPQueue, cls).__new__(cls, *args, **kwargs)
+        return super(HashPQ, cls).__new__(cls, *args, **kwargs)
 
     def __str__(self):
         return self.__dic.__str__()
@@ -46,17 +47,23 @@ class HashPQueue(object):
     def get(self):
         if not self.__dic:
             self.__lock.wait()
+        return get_nowait()
+
+    def get_nowait(self):
+        if not self.__dic:
+            raise EmptyHashPQ
         # sort keys in list
-        self.__dic.keys().sort()
-        highestPriority = self.__dic.keys()[-1]
+        keyList = self.__dic.keys()
+        keyList.sort()
+        highestPriority = keyList[-1]
         # get high priority list
         highestPriorityList = self.__dic[highestPriority]
         item = highestPriorityList.popitem(last=False)
         self.__size -= 1
         if not self.__size:
             self.__lock.clear()
-        else:
-            self.__lock.set()
+        #else:
+        #    self.__lock.set()
         if not highestPriorityList:
             del self.__dic[highestPriority]
         return item[1]
@@ -87,17 +94,16 @@ class HashPQueue(object):
             del self.__dic[priority]
         return value
 
+    def get_as_list(self):
+        pass
+
+    def get_as_list_nowait(self):
+        pass
 
     def pick(self):
         pass
 
     def pick_nowait(self):
-        pass
-
-    def get_as_list(self):
-        pass
-
-    def get_as_list_nowait(self):
         pass
 
     def pick_as_list(self):
@@ -129,7 +135,6 @@ class HashPQueue(object):
                 print item
                 item_list.append(item)
         return item_list
-
 
     def pick_by_key_nowait(self, key, priority=None):
         if not self.__dic:
@@ -169,6 +174,7 @@ class HashPQueue(object):
         except:
             return None
         return value
+
     def get_by_key_nowait(self, key, priority=None):
         if not self.__dic:
             raise EmptyHashPQ
@@ -200,6 +206,15 @@ class HashPQueue(object):
         if self.__size == self.__capacity:
             self.__lock.clear()
             self.__lock.wait()
+        return put_nowait()
+
+    def put_nowait(self, item):
+        if not item:
+            return False
+        if self.__size == self.__capacity:
+           raise FullHashPQ
+        if self.__size == self.__capacity:
+            raise FullHashPQ
         try:
             priority = item[0]
             key = item[1]
@@ -211,10 +226,8 @@ class HashPQueue(object):
                 value = item[1]
             except IndexError:
                 priority = DEFAULT_PRIORITY
-                key = DEFAULT_QUEUE
+                key = DEFAULT_KEY
                 value = item[0]
-        except ValueError:
-            return False
         except:
             return False
         if priority not in self.__dic.keys():
@@ -224,32 +237,11 @@ class HashPQueue(object):
         self.__dic[priority][key] = value
         self.__lock.set()
 
-    def get_nowait(self):
-        if not self.__dic:
-            raise EmptyHashPQ
-        # sort keys in list
-        self.__dic.keys().sort()
-        highestPriority = self.__dic.keys()[-1]
-        # get high priority list
-        highestPriorityList = self.__dic[highestPriority]
-        item = highestPriorityList.popitem(last=False)
-        self.__size -= 1
-        if not self.__size:
-            self.__lock.clear()
-        else:
-            self.__lock.set()
-        if not highestPriorityList:
-            del self.__dic[highestPriority]
-        return item[1]
-
     def put_nowait_with_kwa(self, **kwargs):
        if not kwargs:
            return False
        if self.__size == self.__capacity:
            raise FullHashPQ
-       if self.__size == self.__capacity:
-           self.__lock.clear()
-           self.__lock.wait()
        if 'priority' in kwargs:
            priority = kwargs['priority']
        else:
@@ -258,7 +250,7 @@ class HashPQueue(object):
        if 'key' in kwargs:
            key = kwargs['key']
        else:
-           key = DEFAULT_QUEUE
+           key = DEFAULT_KEY
 
        if 'value' in kwargs:
            value = kwargs['value']
@@ -273,37 +265,6 @@ class HashPQueue(object):
        self.__dic[priority][key] = value
        self.__lock.set()
 
-    def put_nowait(self, item):
-        if not item:
-            return False
-        if self.__size == self.__capacity:
-           raise FullHashPQ
-        if self.__size == self.__capacity:
-            self.__lock.clear()
-            self.__lock.wait()
-        try:
-            priority = item[0]
-            key = item[1]
-            value = item[2]
-        except IndexError:
-            try:
-                priority = DEFAULT_PRIORITY
-                key = item[0]
-                value = item[1]
-            except IndexError:
-                priority = DEFAULT_PRIORITY
-                key = DEFAULT_QUEUE
-                value = item[0]
-        except:
-            return False
-        if priority not in self.__dic.keys():
-            self.__dic[priority] = OrderedDict()
-        if key not in self.__dic[priority]:
-            self.__size += 1
-        self.__dic[priority][key] = value
-        self.__lock.set()
-
-
 class HashPQException(Exception):
     pass
 
@@ -316,9 +277,8 @@ class FullHashPQ(HashPQException):
 class InvalidHashKey(HashPQException):
     pass
 
-
 if __name__ == '__main__':
-    pq = HashPQueue()
+    pq = HashPQ()
     pq.put_nowait((1, 3, 4))
     pq.put_nowait((1, 4, 3))
     pq.put_nowait((1, 4, 6))
@@ -334,7 +294,8 @@ if __name__ == '__main__':
     pq.put_nowait((8, 4, 7))
     pq.put_nowait((3, 6))
     pq.put_nowait((2,))
-    pq.put_nowait_with_kwa(priority=3, value=3)
+    pq.put_nowait(("2",))
+    pq.put_nowait_with_kwa(priority=3, value=3, key=3)
     pq.get_dic()
     print "get_as_list:", pq.get_as_list()
     print pq.qsize()
